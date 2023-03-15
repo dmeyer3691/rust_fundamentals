@@ -1,11 +1,21 @@
 #![allow(unused_variables)]
+#![allow(dead_code)]
 
+use std::fs::File;
+use std::io::ErrorKind;
+use std::io::{Error, Read};
 
 fn main() {
 
-     project();
+     // project();
      // demo();
      // options_demo();
+     // memory_demo();
+     // fn_demo();
+     // closure_demo();
+     // error_handle_demo();
+     error_propogate_demo();
+
      
      #[allow(dead_code)]
      fn project() {
@@ -57,7 +67,7 @@ fn main() {
      
                let central_angle = 2.0 * inner_central_angle.sqrt().asin();
                let distance = EARTH_RADIUS_IN_KILOMETERS * central_angle;
-               
+
                distance
           }
 
@@ -144,4 +154,169 @@ fn main() {
 
      }
 
+     #[allow(dead_code)]
+     fn memory_demo() {
+          let mut original = String::from ("original value");
+          println!("\nOuter scope original: \t\"{}\"", original);
+
+          // part 1
+          // let next = original;
+          // won't work because original doesn't exist anymore really. next is now owner of that memory in heap
+          // println!("{}", original);
+
+          // part 2
+          // this makes next a pointer to original rather than borrowing value.
+          // let next = &original;
+          // original = String::from("new value");
+          // rust won't let you do this since we've already pointed to it
+
+          // part 3
+          {
+               let next = &mut original;
+
+               *next = String::from("next value");
+               println!("\ninner scope next: \t\"{}\"", next);
+               println!("\ninner scope original: \t\"{}\"", original);
+
+          }
+
+          println!("\nOuter scope original: \t\"{}\"", original);
+
+
+          // lifetime part 1
+          let outer_scope;
+          {
+               let inner_scope = 5;
+               outer_scope = inner_scope;
+          }
+          println!("{}", outer_scope);
+
+          // lifetime part 2
+
+          // wont work because value only exists in scope of function
+          // and the returned pointer is now not pointing to anything
+          // let returned_ref = return_bad_ref();
+          // fn return_bad_ref() -> &i32 {
+          //      let value = 4;
+          //      &value
+          // }
+          
+          let referenced_int = 6;
+          let returned_value = return_one_param(&referenced_int);
+          println!("{}", returned_value);
+
+          fn return_one_param(value: &i32) -> &i32 {
+               value
+          }
+
+
+          let value_one = 24;
+          let value_two = 67;
+          let value = explicit_lifetime(&value_one, &value_two);
+          println!("{}", value);
+
+          fn explicit_lifetime<'a>(p1: &'a i32, p2: &'a i32) -> &'a i32 {
+               if p1 > p2 {
+                    p1
+               } else {
+                    p2
+               }
+          }
+
+     }
+
+
+     fn fn_demo() {
+          let mut original = String::from ("original value");
+          println!("\nOuter scope original: \t\"{}\"", original);
+
+          {
+               print_original(&original);
+               change_original(&mut original);
+               println!("inner scope original): \t\"{}\"", original);
+          }
+         
+     }
+
+     fn print_original(original: &String) {
+          println!("fn print_original: \t\"{}\"", original);
+     } 
+
+     fn change_original(original: &mut String) {
+          let next= original;
+          *next = String::from("next value");
+          println!("fn change_original: \t\"{}\"", next);
+     }
+
+     fn closure_demo() {
+          let name = "Duck Airlines";
+
+          let write_message_closure = |closure_scope_var: String| -> String {
+               println!("This is the closure");
+               println!("{}. {}", name, closure_scope_var);
+               String::from(format!("{}. {}", name, closure_scope_var))
+          };
+
+          let closure_ret_val = write_message_closure(String::from("We hit the ground every time."));
+     
+          println!("{}", closure_ret_val);
+     }
+
+
+     fn error_demo() {
+          let filename = "./test_file_dne.json";
+
+          let file_handle = File::open(filename);
+
+          match file_handle {
+               Ok(file) => {
+                    println!("{:#?}", file);
+               }
+               Err(error) => {
+                    // panic!("panic message");
+                    println!("{:#?}", error);
+                    match error.kind() {
+                         ErrorKind::NotFound => {
+                              match File::create(filename) {
+                                   Ok(file) => {
+                                        println!("File Created");
+                                   }
+                                   Err(error) => {
+                                        println!("{:#?}", error);
+                                   }
+                              }
+                         }
+                         // match any other error type
+                         _ => {
+                              println!("{:#?}", error);
+                         }
+                    }
+
+               }
+          }
+     }
+
+
+     fn error_propogate_demo() {
+
+          let filename = "./test_file_dne.json";
+          let file_data = read_file(filename);
+          match file_data {
+               Ok(data) => {
+                    println!("{}", data);
+               }
+               Err(error) => {
+                    println!("Error down in stack");
+                    println!("{}", error);
+               }
+          }
+
+          fn read_file(filename: &str) -> Result<String, Error> {
+               // ? at the end is what does the magic here of passing error up stack
+               let mut file_handle = File::open(filename)?;
+               let mut file_data = String::new();
+               file_handle.read_to_string(&mut file_data)?;
+               Ok(file_data)
+          }
+     }
 }
