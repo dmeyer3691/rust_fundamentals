@@ -13,10 +13,11 @@ mod errors;
 mod collections;
 mod generics;
 mod concurrency;
+mod random;
 
 fn main() {
 
-     project();
+     // project();
      // demo::demo();
      // options::options_demo();
      // memory::memory_demo();
@@ -28,6 +29,7 @@ fn main() {
      // collections::collections_demo();
      // generics::generics_demo();
      // concurrency::concurrency_demo();
+     random::random_demo();
      
 }
 

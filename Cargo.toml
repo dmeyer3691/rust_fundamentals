@@ -2,10 +2,14 @@
 name = "rust_fundamentals"
 version = "0.1.0"
 edition = "2021"
+description = "Pluralsight Rust Fundamentals publishing example"
+license = "Apache-2.0"
+# https://spdx.github.io/license-list-data/
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+rand = "0.8.4"
 
 [[bin]]
 name = "rust_fundamentals"
